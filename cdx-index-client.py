@@ -16,8 +16,14 @@ import logging
 
 from urlparse import urljoin
 from bs4 import BeautifulSoup
+from retrying import retry
 
 DEF_API_BASE = 'http://index.commoncrawl.org/'
+
+def dont_retry_if_keyint(exception):
+    """Return True if we should retry (in this case
+    when it's an IOError), False otherwise"""
+    return not isinstance(exception, KeyboardInterrupt)
 
 
 def get_index_urls(url):
@@ -50,6 +56,15 @@ def get_num_pages(api_url, url, page_size=None):
     else:
         msg = 'Num pages query returned invalid data: ' + r.text
         raise Exception(msg)
+
+@retry(
+    stop_max_attempt_number=10,
+    wait_exponential_multiplier=1000,
+    wait_exponential_max=200000,
+    retry_on_exception=dont_retry_if_keyint)
+def get_wrapper(session, url, req_headers, timeout):
+    logging.info('Fetching page {0}'.format(url))
+    return session.get(url, headers=req_headers, stream=True, timeout=timeout)
 
 
 def fetch_result_page(job_params):
@@ -101,8 +116,10 @@ def fetch_result_page(job_params):
 
     # Get the result
     session = requests.Session()
-    r = session.get(api_url + '?' + query, headers=req_headers,
-                    stream=True, timeout=timeout)
+    r = get_wrapper(session, api_url + '?' + query, req_headers, timeout)
+    #session = requests.Session()
+    #r = session.get(api_url + '?' + query, headers=req_headers,
+    #                stream=True, timeout=timeout)
 
     if r.status_code == 404:
         logging.error('No Results for for this query')
