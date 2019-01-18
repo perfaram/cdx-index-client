@@ -372,7 +372,10 @@ def main():
 
     if not r.coll:
         collinfo = [collinfo[0]]
-    elif r.coll and r.coll != 'all':
+    elif r.coll.startswith('recent-'):
+        len = int(r.coll[len('recent-'):])
+        collinfo = collinfo[:len]
+    elif r.coll != 'all':
         collinfo = filter(lambda c: c['id'] == r.coll, collinfo)
 
     for info in collinfo:
