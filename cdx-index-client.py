@@ -1,6 +1,6 @@
-#!/usr/bin/env python
-from future.standard_library import install_aliases
-install_aliases()
+#!/usr/bin/python3
+#from future.standard_library import install_aliases
+#install_aliases()
 
 from builtins import range
 
@@ -368,6 +368,10 @@ def read_index(r, api_url, prefix=None):
 def main():
     r = get_args()
 
+    if r.cdx_server_url:
+        read_index(r, r.cdx_server_url)
+        return
+    
     collinfo = requests.get(urljoin(r.cdx_server_url, 'collinfo.json')).json()
 
     if not r.coll:
