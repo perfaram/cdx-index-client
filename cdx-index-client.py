@@ -48,8 +48,13 @@ def get_num_pages(api_url, url, page_size=None):
     r = session.get(api_url, params=query)
     pages_info = r.json()
 
+    error = pages_info.get('error')
+    if error:
+        msg = 'Num pages query returned an error: ' + str(error)
+        raise Exception(msg)
+
     if isinstance(pages_info, dict):
-        return pages_info['pages']
+        return pages_info.get('pages')
     elif isinstance(pages_info, int):
         return pages_info
     else:
