@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from future.standard_library import install_aliases
 install_aliases()
 

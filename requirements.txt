@@ -1,2 +1,4 @@
 future
 requests
+beautifulsoup4
+retrying
